@@ -35,6 +35,7 @@ function App() {
   const [ledger, setLedger] = useState([])
   const [bankAccounts, setBankAccounts] = useState([])
   const [amountRupees, setAmountRupees] = useState('')
+  const [creditsRupees, setCreditsRupees] = useState('')
   const [selectedBankAccount, setSelectedBankAccount] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -124,6 +125,31 @@ function App() {
     setIsSubmitting(false)
   }
 
+  const handleAddCredits = async (event) => {
+    event.preventDefault()
+    setErrorMessage('')
+
+    const amountPaise = Math.round(Number(creditsRupees) * 100)
+    if (amountPaise <= 0) {
+      setErrorMessage('Enter a valid amount.')
+      return
+    }
+
+    setIsSubmitting(true)
+    const { response, body } = await request('/api/v1/credits/', {
+      method: 'POST',
+      body: JSON.stringify({ amount_paise: amountPaise }),
+    })
+
+    if (response.ok) {
+      setCreditsRupees('')
+      await loadAll()
+    } else {
+      setErrorMessage(body.error || 'Unable to add credits.')
+    }
+    setIsSubmitting(false)
+  }
+
   return (
     <main className="mx-auto min-h-screen max-w-7xl p-4 md:p-8">
       <header className="mb-6 rounded-3xl border border-white/10 bg-gradient-header backdrop-blur-sm p-6 shadow-lg shadow-black/40">
@@ -165,6 +191,31 @@ function App() {
           <p className="text-sm font-medium text-slate-400">Total</p>
           <p className="mt-2 text-3xl font-bold text-white">INR {formatRupees(balance.total_paise)}</p>
         </article>
+      </section>
+
+      <section className="mt-6 rounded-3xl border border-emerald-500/30 bg-gradient-card backdrop-blur-sm p-5 shadow-lg shadow-black/30">
+        <h2 className="text-xl font-semibold text-white">Add credits</h2>
+        <form className="mt-4 flex flex-wrap gap-4" onSubmit={handleAddCredits}>
+          <label className="flex flex-col gap-1 text-sm font-medium text-slate-300">
+            Amount (INR)
+            <input
+              type="number"
+              min="1"
+              step="0.01"
+              value={creditsRupees}
+              onChange={(event) => setCreditsRupees(event.target.value)}
+              className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-white placeholder:text-slate-500 backdrop-blur-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30 focus:outline-none transition"
+              required
+            />
+          </label>
+          <button
+            type="submit"
+            className="mt-auto rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 focus:ring-2 focus:ring-emerald-500/50 focus:outline-none disabled:cursor-not-allowed disabled:bg-emerald-900/50 disabled:text-emerald-400"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Adding...' : 'Add credits'}
+          </button>
+        </form>
       </section>
 
       <section className="mt-6 rounded-3xl border border-white/10 bg-gradient-card backdrop-blur-sm p-5 shadow-lg shadow-black/30">

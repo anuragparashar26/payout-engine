@@ -24,3 +24,8 @@ th,
 td {
   white-space: nowrap;
 }
+
+select option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
